@@ -15,8 +15,12 @@ function App() {
           <Route path="/movie/:id" element={<Movie />} />
           <Route path="/search" element={<Search />} />
           <Route path="/search/:query" element={<Search />} />
-          {/* Rota para a biblioteca de filmes - ajuste conforme necessário */}
+          
+          {/* ADICIONE ESTAS ROTAS PARA EVITAR WARNINGS */}
           <Route path="/movies-library" element={<Home />} />
+          <Route path="/Movies_Library" element={<Home />} />
+          <Route path="/tv-shows" element={<Home />} />
+          <Route path="/my-list" element={<Home />} />
         </Routes>
       </main>
       
@@ -24,7 +28,7 @@ function App() {
       <footer className="mt-20 py-8 border-t border-gray-800">
         <div className="container mx-auto px-4 text-center text-gray-500">
           <p>© 2024 Movie Library. Todos os direitos reservados.</p>
-          <p className="mt-2 text-sm">Desenvolvido com React, Vite e Tailwind CSS</p>
+          <p className="mt-2 text-sm">Dados fornecidos por TMDB</p>
           <div className="mt-4 flex justify-center space-x-4">
             <a href="#" className="hover:text-white transition">Termos de Uso</a>
             <a href="#" className="hover:text-white transition">Política de Privacidade</a>

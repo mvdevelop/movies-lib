@@ -1,7 +1,7 @@
 
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { Search, Menu, X, Home, Film, User } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom';;
+import { Search, Menu, X, Home, Film, User } from 'lucide-react';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -19,7 +19,7 @@ const Navbar = () => {
 
   const navLinks = [
     { name: 'Início', path: '/', icon: <Home size={20} /> },
-    { name: 'Filmes', path: '/movies-library', icon: <Film size={20} /> },
+    { name: 'Filmes', path: '/movies-library', icon: <Film size={20} /> }, // Use minúsculas
     { name: 'Séries', path: '/tv-shows', icon: <Film size={20} /> },
     { name: 'Minha Lista', path: '/my-list', icon: <User size={20} /> },
   ]

@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import MovieCard from '../components/MovieCard';
 import { tmdbApi, getImageUrl } from '../services/api';
-import { Play, TrendingUp, Filter, Sparkles, Loader } from 'lucide-react';
+import { Play, TrendingUp, Filter, Sparkles, Loader, AlertCircle } from 'lucide-react';
 
 const Home = () => {
   const [featuredMovie, setFeaturedMovie] = useState(null)
@@ -11,14 +11,16 @@ const Home = () => {
   const [topRated, setTopRated] = useState([])
   const [genres, setGenres] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [activeCategory, setActiveCategory] = useState('popular')
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true)
+        setError(null)
         
-        // Buscar múltiplos dados em paralelo
+        // Buscar dados em paralelo
         const [
           popularRes,
           nowPlayingRes,
@@ -35,9 +37,11 @@ const Home = () => {
         const playing = nowPlayingRes.data.results
         const top = topRatedRes.data.results
         
-        // Definir filme em destaque (primeiro filme popular)
+        // Definir filme em destaque
         if (playing.length > 0) {
           setFeaturedMovie(playing[0])
+        } else if (popular.length > 0) {
+          setFeaturedMovie(popular[0])
         }
         
         setPopularMovies(popular)
@@ -47,9 +51,49 @@ const Home = () => {
         
       } catch (error) {
         console.error('Erro ao carregar dados:', error)
+        setError('Erro ao carregar dados da API. Verifique sua conexão e a chave da API.')
+        // Dados de fallback para desenvolvimento
+        setFallbackData()
       } finally {
         setLoading(false)
       }
+    }
+
+    // Função de fallback para desenvolvimento
+    const setFallbackData = () => {
+      const fallbackMovie = {
+        id: 1,
+        title: 'Filme de Exemplo',
+        backdrop_path: '/example.jpg',
+        vote_average: 7.5,
+        release_date: '2024-01-01',
+        overview: 'Este é um filme de exemplo para demonstração.',
+        genre_ids: [28]
+      }
+      
+      setFeaturedMovie(fallbackMovie)
+      
+      const fallbackMovies = Array.from({length: 10}, (_, i) => ({
+        id: i + 1,
+        title: `Filme Exemplo ${i + 1}`,
+        poster_path: null,
+        vote_average: 7 + (i * 0.1),
+        release_date: '2024-01-01',
+        overview: 'Descrição do filme exemplo.',
+        genre_ids: [28, 35]
+      }))
+      
+      setPopularMovies(fallbackMovies)
+      setNowPlaying(fallbackMovies)
+      setTopRated(fallbackMovies)
+      setGenres([
+        { id: 28, name: 'Ação' },
+        { id: 35, name: 'Comédia' },
+        { id: 18, name: 'Drama' },
+        { id: 878, name: 'Ficção Científica' },
+        { id: 27, name: 'Terror' },
+        { id: 10749, name: 'Romance' }
+      ])
     }
 
     fetchData()
@@ -64,19 +108,23 @@ const Home = () => {
     }
   }
 
-  const getCategoryTitle = () => {
-    switch(activeCategory) {
-      case 'popular': return 'Populares'
-      case 'nowPlaying': return 'Em Cartaz'
-      case 'topRated': return 'Melhores Avaliados'
-      default: return 'Filmes'
-    }
-  }
-
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
         <Loader className="animate-spin text-purple-500" size={48} />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-20">
+        <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+        <h2 className="text-2xl font-bold text-white mb-2">Erro ao carregar dados</h2>
+        <p className="text-gray-400 mb-6 max-w-md mx-auto">{error}</p>
+        <p className="text-gray-500 text-sm">
+          Verifique se sua chave da API no arquivo .env está correta.
+        </p>
       </div>
     )
   }
@@ -114,11 +162,6 @@ const Home = () => {
                     <span className="text-gray-300">
                       {featuredMovie.release_date?.substring(0, 4) || 'N/A'}
                     </span>
-                    {featuredMovie.genre_ids && genres.length > 0 && (
-                      <span className="px-3 py-1 bg-gray-800 rounded-full text-sm">
-                        {genres.find(g => g.id === featuredMovie.genre_ids[0])?.name || 'Filme'}
-                      </span>
-                    )}
                   </div>
                   
                   <p className="text-gray-300 text-lg mb-8 line-clamp-3">
@@ -128,10 +171,7 @@ const Home = () => {
                   <div className="flex space-x-4">
                     <button className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg flex items-center space-x-2 hover:opacity-90 transition">
                       <Play size={24} />
-                      <span className="font-semibold">Assistir Trailer</span>
-                    </button>
-                    <button className="px-8 py-3 bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-700 transition">
-                      Mais Informações
+                      <span className="font-semibold">Ver Detalhes</span>
                     </button>
                   </div>
                 </div>
@@ -189,16 +229,10 @@ const Home = () => {
           {genres.map((genre) => (
             <button
               key={genre.id}
-              onClick={() => console.log('Navigate to genre:', genre.id)}
               className="p-4 bg-gray-800 rounded-xl hover:bg-gray-700 hover:transform hover:-translate-y-1 transition-all duration-300 text-center group"
             >
               <span className="text-white font-medium group-hover:text-purple-300 transition">
                 {genre.name}
-              </span>
-              <span className="block text-xs text-gray-500 mt-1">
-                {genre.id === 28 ? 'Ação' : 
-                 genre.id === 35 ? 'Comédia' : 
-                 genre.id === 18 ? 'Drama' : ''}
               </span>
             </button>
           ))}

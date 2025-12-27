@@ -2,9 +2,8 @@
 import axios from 'axios';
 
 const API_KEY = import.meta.env.VITE_API_KEY;
-const BASE_URL = import.meta.env.VITE_API.replace('/movie', '');
-const IMG_BASE_URL = import.meta.env.VITE_IMG;
-const SEARCH_URL = import.meta.env.VITE_SEARCH;
+const BASE_URL = 'https://api.themoviedb.org/3';
+const IMG_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -41,7 +40,7 @@ export const tmdbApi = {
   
   // Buscar filmes
   searchMovies: (query, page = 1) => 
-    api.get(SEARCH_URL.replace(BASE_URL, ''), { 
+    api.get('/search/movie', { 
       params: { query, page } 
     }),
   
@@ -62,7 +61,7 @@ export const tmdbApi = {
 // Helper para imagens
 export const getImageUrl = (path, size = 'w500') => {
   if (!path) return 'https://via.placeholder.com/500x750/1a1a2e/ffffff?text=No+Image';
-  return `${IMG_BASE_URL.replace('/w500/', `/${size}/`)}${path}`;
+  return `https://image.tmdb.org/t/p/${size}${path}`;
 };
 
 // Helper para vídeos do YouTube
