@@ -1,31 +1,37 @@
 
 import { Link } from 'react-router-dom';
 import { Star, Calendar, Clock, Play } from 'lucide-react';
+import { getImageUrl } from '../services/api';
 
 const MovieCard = ({ movie }) => {
-  // Dados de exemplo para demonstração
+  if (!movie) return null;
+
+  // Formatar dados do filme
   const movieData = {
-    id: movie?.id || 1,
-    title: movie?.title || 'Título do Filme',
-    poster: movie?.poster || 'https://via.placeholder.com/300x450/1a1a2e/ffffff?text=Poster',
-    rating: movie?.rating || 7.8,
-    year: movie?.year || 2024,
-    duration: movie?.duration || '2h 15m',
-    genre: movie?.genre || ['Ação', 'Aventura'],
-    description: movie?.description || 'Uma breve descrição do filme vai aqui...'
+    id: movie.id,
+    title: movie.title || movie.original_title,
+    poster: getImageUrl(movie.poster_path),
+    rating: movie.vote_average?.toFixed(1) || 'N/A',
+    year: movie.release_date ? movie.release_date.substring(0, 4) : 'N/A',
+    duration: movie.runtime ? `${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m` : 'N/A',
+    genre: movie.genre_names || movie.genres?.map(g => g.name) || [],
+    description: movie.overview || 'Sinopse não disponível.'
   }
 
   return (
     <Link 
       to={`/movie/${movieData.id}`}
-      className="movie-card group block bg-gray-800 rounded-xl overflow-hidden hover:bg-gray-700 transition-all duration-300 transform hover:-translate-y-2"
+      className="movie-card group block bg-gray-800 rounded-xl overflow-hidden hover:bg-gray-700 transition-all duration-300 transform hover:-translate-y-2 h-full"
     >
       {/* Poster Image */}
-      <div className="relative overflow-hidden">
+      <div className="relative overflow-hidden aspect-[2/3]">
         <img 
           src={movieData.poster} 
           alt={movieData.title}
-          className="w-full h-64 md:h-80 object-cover group-hover:scale-105 transition-transform duration-500"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          onError={(e) => {
+            e.target.src = 'https://via.placeholder.com/300x450/1a1a2e/ffffff?text=No+Image';
+          }}
         />
         
         {/* Overlay com Play Button */}
@@ -33,16 +39,18 @@ const MovieCard = ({ movie }) => {
           <div className="absolute bottom-4 left-4 right-4">
             <button className="w-full py-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg flex items-center justify-center space-x-2 hover:opacity-90 transition">
               <Play size={20} />
-              <span>Assistir Trailer</span>
+              <span>Ver Detalhes</span>
             </button>
           </div>
         </div>
         
         {/* Rating Badge */}
-        <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-sm px-3 py-1 rounded-full flex items-center space-x-1">
-          <Star className="text-yellow-400" size={16} fill="currentColor" />
-          <span className="font-bold text-white">{movieData.rating}</span>
-        </div>
+        {movieData.rating !== 'N/A' && (
+          <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-sm px-3 py-1 rounded-full flex items-center space-x-1">
+            <Star className="text-yellow-400" size={16} fill="currentColor" />
+            <span className="font-bold text-white">{movieData.rating}</span>
+          </div>
+        )}
       </div>
 
       {/* Movie Info */}
@@ -57,29 +65,40 @@ const MovieCard = ({ movie }) => {
               <Calendar size={14} />
               <span>{movieData.year}</span>
             </div>
-            <div className="flex items-center space-x-1">
-              <Clock size={14} />
-              <span>{movieData.duration}</span>
-            </div>
+            {movieData.duration !== 'N/A' && (
+              <div className="flex items-center space-x-1">
+                <Clock size={14} />
+                <span>{movieData.duration}</span>
+              </div>
+            )}
           </div>
           
-          <div className="flex items-center space-x-1">
-            <Star className="text-yellow-400" size={14} fill="currentColor" />
-            <span>{movieData.rating}</span>
-          </div>
+          {movieData.rating !== 'N/A' && (
+            <div className="flex items-center space-x-1">
+              <Star className="text-yellow-400" size={14} fill="currentColor" />
+              <span>{movieData.rating}</span>
+            </div>
+          )}
         </div>
 
         {/* Genres */}
-        <div className="mt-3 flex flex-wrap gap-2">
-          {movieData.genre.map((genre, index) => (
-            <span 
-              key={index}
-              className="px-2 py-1 bg-gray-700 rounded-md text-xs text-gray-300"
-            >
-              {genre}
-            </span>
-          ))}
-        </div>
+        {movieData.genre.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {movieData.genre.slice(0, 2).map((genre, index) => (
+              <span 
+                key={index}
+                className="px-2 py-1 bg-gray-700 rounded-md text-xs text-gray-300"
+              >
+                {genre}
+              </span>
+            ))}
+            {movieData.genre.length > 2 && (
+              <span className="px-2 py-1 bg-gray-700 rounded-md text-xs text-gray-300">
+                +{movieData.genre.length - 2}
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Description */}
         <p className="mt-3 text-sm text-gray-300 line-clamp-2">

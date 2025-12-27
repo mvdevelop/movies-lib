@@ -1,90 +1,82 @@
 
 import { useState, useEffect } from 'react';
 import MovieCard from '../components/MovieCard';
-import { Play, TrendingUp, Filter, Sparkles } from 'lucide-react';
+import { tmdbApi, getImageUrl } from '../services/api';
+import { Play, TrendingUp, Filter, Sparkles, Loader } from 'lucide-react';
 
 const Home = () => {
   const [featuredMovie, setFeaturedMovie] = useState(null)
-  const [movies, setMovies] = useState([])
+  const [popularMovies, setPopularMovies] = useState([])
+  const [nowPlaying, setNowPlaying] = useState([])
+  const [topRated, setTopRated] = useState([])
+  const [genres, setGenres] = useState([])
   const [loading, setLoading] = useState(true)
-
-  // Dados de exemplo
-  const sampleMovies = [
-    {
-      id: 1,
-      title: 'Duna: Parte Dois',
-      poster: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=300',
-      rating: 8.7,
-      year: 2024,
-      duration: '2h 46m',
-      genre: ['Ficção Científica', 'Aventura'],
-      description: 'Paul Atreides se une a Chani e aos Fremen em sua guerra de vingança contra os conspiradores que destruíram sua família.'
-    },
-    {
-      id: 2,
-      title: 'Oppenheimer',
-      poster: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w-301',
-      rating: 8.3,
-      year: 2023,
-      duration: '3h',
-      genre: ['Biografia', 'Drama'],
-      description: 'A história do físico J. Robert Oppenheimer e seu papel no desenvolvimento da bomba atômica.'
-    },
-    {
-      id: 3,
-      title: 'Interestelar',
-      poster: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w-302',
-      rating: 8.6,
-      year: 2014,
-      duration: '2h 49m',
-      genre: ['Aventura', 'Drama'],
-      description: 'Uma equipe de exploradores viaja através de um buraco de minhoca no espaço na esperança de garantir a sobrevivência da humanidade.'
-    },
-    {
-      id: 4,
-      title: 'O Poderoso Chefão',
-      poster: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w-303',
-      rating: 9.2,
-      year: 1972,
-      duration: '2h 55m',
-      genre: ['Crime', 'Drama'],
-      description: 'O envelhecido patriarca de uma dinastia do crime organizado transfere o controle de seu império clandestino para seu filho relutante.'
-    },
-    {
-      id: 5,
-      title: 'Parasita',
-      poster: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w-304',
-      rating: 8.6,
-      year: 2019,
-      duration: '2h 12m',
-      genre: ['Comédia', 'Drama'],
-      description: 'Uma família pobre se infiltra na casa de uma família rica, dando início a uma sequência imprevisível de eventos.'
-    },
-    {
-      id: 6,
-      title: 'Clube da Luta',
-      poster: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w-305',
-      rating: 8.8,
-      year: 1999,
-      duration: '2h 19m',
-      genre: ['Drama'],
-      description: 'Um homem deprimido que sofre de insônia conhece um vendedor de sabonetes um tanto excêntrico.'
-    }
-  ]
+  const [activeCategory, setActiveCategory] = useState('popular')
 
   useEffect(() => {
-    // Simular carregamento de dados
-    setTimeout(() => {
-      setFeaturedMovie(sampleMovies[0])
-      setMovies(sampleMovies)
-      setLoading(false)
-    }, 1000)
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+        
+        // Buscar múltiplos dados em paralelo
+        const [
+          popularRes,
+          nowPlayingRes,
+          topRatedRes,
+          genresRes
+        ] = await Promise.all([
+          tmdbApi.getPopularMovies(),
+          tmdbApi.getNowPlaying(),
+          tmdbApi.getTopRated(),
+          tmdbApi.getGenres()
+        ])
+
+        const popular = popularRes.data.results
+        const playing = nowPlayingRes.data.results
+        const top = topRatedRes.data.results
+        
+        // Definir filme em destaque (primeiro filme popular)
+        if (playing.length > 0) {
+          setFeaturedMovie(playing[0])
+        }
+        
+        setPopularMovies(popular)
+        setNowPlaying(playing)
+        setTopRated(top)
+        setGenres(genresRes.data.genres.slice(0, 12))
+        
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
   }, [])
+
+  const getMoviesByCategory = () => {
+    switch(activeCategory) {
+      case 'popular': return popularMovies
+      case 'nowPlaying': return nowPlaying
+      case 'topRated': return topRated
+      default: return popularMovies
+    }
+  }
+
+  const getCategoryTitle = () => {
+    switch(activeCategory) {
+      case 'popular': return 'Populares'
+      case 'nowPlaying': return 'Em Cartaz'
+      case 'topRated': return 'Melhores Avaliados'
+      default: return 'Filmes'
+    }
+  }
 
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-purple-500"></div>
+        <Loader className="animate-spin text-purple-500" size={48} />
       </div>
     )
   }
@@ -92,85 +84,122 @@ const Home = () => {
   return (
     <div className="fade-in">
       {/* Hero Section - Featured Movie */}
-      <section className="relative rounded-2xl overflow-hidden mb-12">
-        <div 
-          className="h-[500px] bg-cover bg-center"
-          style={{
-            backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.8), rgba(0,0,0,0.4)), url(${featuredMovie.poster})`
-          }}
-        >
-          <div className="absolute inset-0 flex items-center">
-            <div className="container mx-auto px-8">
-              <div className="max-w-2xl">
-                <div className="flex items-center space-x-2 mb-4">
-                  <Sparkles className="text-yellow-400" />
-                  <span className="text-yellow-400 font-semibold">EM DESTAQUE</span>
-                </div>
-                
-                <h1 className="text-5xl md:text-6xl font-bold text-white mb-4">
-                  {featuredMovie.title}
-                </h1>
-                
-                <div className="flex items-center space-x-6 mb-6">
-                  <span className="flex items-center space-x-2">
-                    <span className="text-2xl font-bold text-purple-400">{featuredMovie.rating}</span>
-                    <span className="text-gray-300">/10</span>
-                  </span>
-                  <span className="text-gray-300">{featuredMovie.year} • {featuredMovie.duration}</span>
-                  <span className="px-3 py-1 bg-gray-800 rounded-full text-sm">
-                    {featuredMovie.genre[0]}
-                  </span>
-                </div>
-                
-                <p className="text-gray-300 text-lg mb-8">
-                  {featuredMovie.description}
-                </p>
-                
-                <div className="flex space-x-4">
-                  <button className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg flex items-center space-x-2 hover:opacity-90 transition">
-                    <Play size={24} />
-                    <span className="font-semibold">Assistir Agora</span>
-                  </button>
-                  <button className="px-8 py-3 bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-700 transition">
-                    Mais Informações
-                  </button>
+      {featuredMovie && (
+        <section className="relative rounded-2xl overflow-hidden mb-12">
+          <div 
+            className="h-[500px] bg-cover bg-center"
+            style={{
+              backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.8), rgba(0,0,0,0.4)), url(${getImageUrl(featuredMovie.backdrop_path, 'original')})`
+            }}
+          >
+            <div className="absolute inset-0 flex items-center">
+              <div className="container mx-auto px-8">
+                <div className="max-w-2xl">
+                  <div className="flex items-center space-x-2 mb-4">
+                    <Sparkles className="text-yellow-400" />
+                    <span className="text-yellow-400 font-semibold">EM DESTAQUE</span>
+                  </div>
+                  
+                  <h1 className="text-5xl md:text-6xl font-bold text-white mb-4">
+                    {featuredMovie.title}
+                  </h1>
+                  
+                  <div className="flex items-center space-x-6 mb-6">
+                    <span className="flex items-center space-x-2">
+                      <span className="text-2xl font-bold text-purple-400">
+                        {featuredMovie.vote_average?.toFixed(1) || 'N/A'}
+                      </span>
+                      <span className="text-gray-300">/10</span>
+                    </span>
+                    <span className="text-gray-300">
+                      {featuredMovie.release_date?.substring(0, 4) || 'N/A'}
+                    </span>
+                    {featuredMovie.genre_ids && genres.length > 0 && (
+                      <span className="px-3 py-1 bg-gray-800 rounded-full text-sm">
+                        {genres.find(g => g.id === featuredMovie.genre_ids[0])?.name || 'Filme'}
+                      </span>
+                    )}
+                  </div>
+                  
+                  <p className="text-gray-300 text-lg mb-8 line-clamp-3">
+                    {featuredMovie.overview || 'Descrição não disponível.'}
+                  </p>
+                  
+                  <div className="flex space-x-4">
+                    <button className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg flex items-center space-x-2 hover:opacity-90 transition">
+                      <Play size={24} />
+                      <span className="font-semibold">Assistir Trailer</span>
+                    </button>
+                    <button className="px-8 py-3 bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-700 transition">
+                      Mais Informações
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      {/* Trending Now */}
-      <section className="mb-12">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-3">
-            <TrendingUp className="text-purple-400" size={28} />
-            <h2 className="text-3xl font-bold text-white">Em Alta Agora</h2>
-          </div>
-          <button className="flex items-center space-x-2 text-gray-400 hover:text-white transition">
-            <Filter size={20} />
-            <span>Filtrar</span>
-          </button>
+      {/* Category Tabs */}
+      <section className="mb-8">
+        <div className="flex items-center space-x-6 mb-6">
+          <TrendingUp className="text-purple-400" size={28} />
+          <h2 className="text-3xl font-bold text-white">Explorar Filmes</h2>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
-          {movies.map((movie) => (
+        <div className="flex space-x-4 mb-6 overflow-x-auto pb-2">
+          {[
+            { id: 'popular', label: 'Populares' },
+            { id: 'nowPlaying', label: 'Em Cartaz' },
+            { id: 'topRated', label: 'Melhores Avaliados' }
+          ].map((category) => (
+            <button
+              key={category.id}
+              onClick={() => setActiveCategory(category.id)}
+              className={`px-6 py-2 rounded-full whitespace-nowrap transition ${
+                activeCategory === category.id
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+              }`}
+            >
+              {category.label}
+            </button>
+          ))}
+        </div>
+        
+        {/* Movies Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          {getMoviesByCategory().slice(0, 10).map((movie) => (
             <MovieCard key={movie.id} movie={movie} />
           ))}
         </div>
+        
+        {getMoviesByCategory().length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-400 text-lg">Nenhum filme encontrado.</p>
+          </div>
+        )}
       </section>
 
-      {/* Categories */}
+      {/* Genres */}
       <section className="mb-12">
-        <h2 className="text-3xl font-bold text-white mb-6">Explore por Gênero</h2>
+        <h2 className="text-3xl font-bold text-white mb-6">Gêneros</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {['Ação', 'Comédia', 'Drama', 'Ficção Científica', 'Terror', 'Romance', 'Documentário', 'Animação', 'Fantasia', 'Crime', 'Mistério', 'Musical'].map((genre) => (
+          {genres.map((genre) => (
             <button
-              key={genre}
-              className="p-4 bg-gray-800 rounded-xl hover:bg-gray-700 hover:transform hover:-translate-y-1 transition-all duration-300 text-center"
+              key={genre.id}
+              onClick={() => console.log('Navigate to genre:', genre.id)}
+              className="p-4 bg-gray-800 rounded-xl hover:bg-gray-700 hover:transform hover:-translate-y-1 transition-all duration-300 text-center group"
             >
-              <span className="text-white font-medium">{genre}</span>
+              <span className="text-white font-medium group-hover:text-purple-300 transition">
+                {genre.name}
+              </span>
+              <span className="block text-xs text-gray-500 mt-1">
+                {genre.id === 28 ? 'Ação' : 
+                 genre.id === 35 ? 'Comédia' : 
+                 genre.id === 18 ? 'Drama' : ''}
+              </span>
             </button>
           ))}
         </div>
