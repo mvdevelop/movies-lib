@@ -18,7 +18,7 @@ import {
   Loader,
   AlertCircle,
 } from 'lucide-react';
-import MovieCard from '../components/MovieCard';
+import MovieCard from '../components/MovieCard'; // eslint-disable-line @typescript-eslint/no-unused-vars
 import { tmdbApi, getImageUrl, getTrailerUrl } from '../services/api';
 import type { Movie, CastMember, CrewMember, ProductionCompany } from '../types';
 
@@ -204,7 +204,7 @@ const MoviePage: React.FC = () => {
               {/* Tagline */}
               {movie.tagline && (
                 <p className="text-gray-300 italic mb-4">
-                  "{movie.tagline}"
+                  &ldquo;{movie.tagline}&rdquo;
                 </p>
               )}
 

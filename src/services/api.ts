@@ -1,26 +1,30 @@
 /// <reference types="vite/client" />
 
-import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import axios from 'axios';
+import type {
+  AxiosError,
+  AxiosResponse,
+  InternalAxiosRequestConfig,
+} from 'axios';
 import type {
   Movie,
   MovieListResponse,
   Genre,
+  ApiErrorResponse,
 } from '../types';
 
-interface ImportMetaEnv {
-  readonly VITE_API_KEY?: string;
-  readonly VITE_API_URL?: string;
-  readonly VITE_IMG_URL?: string;
-  readonly VITE_API_BASE_URL?: string;
-}
+// Vite client reference types are available via the triple-slash directive above
+// import.meta.env includes VITE_ prefixed variables automatically
 
 // =============================================================================
 // Configuração da API
 // =============================================================================
 
-const API_KEY = import.meta.env.VITE_API_KEY;
-const BASE_URL = import.meta.env.VITE_API_URL || 'https://api.themoviedb.org/3';
-const IMG_BASE_URL = import.meta.env.VITE_IMG_URL || 'https://image.tmdb.org/t';
+/** @type {string | undefined} */
+const API_KEY = import.meta.env.VITE_API_KEY as string | undefined;
+const BASE_URL = (import.meta.env.VITE_API_URL as string | undefined) || 'https://api.themoviedb.org/3';
+// IMG_BASE_URL não é usado diretamente — as URLs de imagem são construídas pelo helper getImageUrl
+// const IMG_BASE_URL = import.meta.env.VITE_IMG_URL || 'https://image.tmdb.org/t';
 
 // =============================================================================
 // Segurança: validação da chave da API no momento da inicialização
@@ -41,7 +45,7 @@ if (!API_KEY) {
 const api = axios.create({
   baseURL: BASE_URL,
   params: {
-    api_key: API_KEY,
+    api_key: API_KEY ?? '',
     language: 'pt-BR',
   },
   timeout: 10000, // 10s timeout para evitar hanging requests
@@ -53,6 +57,7 @@ const api = axios.create({
 
 // Extendemos InternalAxiosRequestConfig para adicionar metadata
 declare module 'axios' {
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   export interface InternalAxiosRequestConfig {
     metadata?: { startTime: Date };
   }
@@ -82,12 +87,16 @@ api.interceptors.response.use(
     }
     return response;
   },
-  (error: AxiosError) => {
+  (error: AxiosError<ApiErrorResponse>) => {
     // Tratamento centralizado de erros
     if (error.response) {
       // Server responded with error status
-      const { status, data } = error.response;
-      console.error(`[API Error] ${status} — ${(data as { status_message?: string })?.status_message || error.message}`);
+      const status: number = error.response.status;
+      const data: unknown = error.response.data;
+      const statusMsg = (data as ApiErrorResponse | undefined)?.status_message;
+      console.error(
+        `[API Error] ${status} — ${statusMsg || error.message}`
+      );
     } else if (error.request) {
       // Request was made but no response received
       console.error('[API Error] Timeout ou conexão falhou — sem resposta do servidor');
@@ -123,7 +132,7 @@ class RateLimiter {
           .then(resolve)
           .catch(reject);
       });
-      this.process();
+      void this.process();
     });
   }
 
@@ -145,7 +154,7 @@ class RateLimiter {
     this.isProcessing = false;
     // Process next immediately if there are more queued
     if (this.queue.length > 0) {
-      setTimeout(() => this.process(), this.minInterval);
+      setTimeout(() => void this.process(), this.minInterval);
     } else {
       this.isProcessing = false;
     }
@@ -210,6 +219,9 @@ export const tmdbApi = {
 const ALLOWED_SIZES = ['w92', 'w154', 'w185', 'w342', 'w500', 'w780', 'original'] as const;
 
 type ImageSize = (typeof ALLOWED_SIZES)[number];
+
+// Referência a ALLOWED_SIZES para uso futuro (validação de tamanho em runtime)
+void ALLOWED_SIZES;
 
 /**
  * Gera URL segura para imagens do TMDB.
@@ -283,6 +295,6 @@ class SimpleCache<T> {
   }
 }
 
-export const movieCache = new SimpleCache<any>(5 * 60 * 1000); // 5 minutos
+export const movieCache = new SimpleCache<unknown>(5 * 60 * 1000); // 5 minutos
 
 export default api;

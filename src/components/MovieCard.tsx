@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Star, Calendar, Clock, Play } from 'lucide-react';
 import { getImageUrl } from '../services/api';
+import type { FC } from 'react';
 import type { Movie } from '../types';
 
 interface MovieCardProps {
@@ -8,7 +9,7 @@ interface MovieCardProps {
   showLink?: boolean;
 }
 
-const MovieCard: React.FC<MovieCardProps> = ({ movie, showLink = true }) => {
+const MovieCard: FC<MovieCardProps> = ({ movie, showLink = true }) => {
   if (!movie) return null;
 
   // Formatar dados do filme com fallback seguro

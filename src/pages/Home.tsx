@@ -57,9 +57,11 @@ const Home: React.FC = () => {
         setTopRated(top);
         setGenres(genresRes.data.genres.slice(0, 12));
       } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : 'Erro desconhecido';
-        console.error('Erro ao carregar dados:', err);
+        // Log do erro para debugging — a mensagem detalhada não é exposta ao usuário
+        console.error(
+          'Erro ao carregar dados:',
+          err instanceof Error ? err.message : err
+        );
         setError(
           'Erro ao carregar dados da API. Verifique sua conexão e a chave da API.'
         );

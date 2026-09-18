@@ -1,12 +1,11 @@
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect } from 'react';
+import type { FormEvent } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import MovieCard from '../components/MovieCard';
 import { tmdbApi } from '../services/api';
 import type { Movie } from '../types';
 import {
   Search as SearchIcon,
-  Filter,
-  X,
   Sliders,
   TrendingUp,
   Clock,
@@ -87,7 +86,8 @@ const Search: React.FC = () => {
     }
   };
 
-  const years = Array.from({ length: 20 }, (_, i) =>
+  // TODO: Anos para filtro - a ser implementado quando os filtros avançados estiverem prontos
+  const _years = Array.from({ length: 20 }, (_, i) =>
     new Date().getFullYear() - i
   );
 

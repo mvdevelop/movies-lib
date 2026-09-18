@@ -95,9 +95,8 @@ export interface MovieCardProps {
   showLink?: boolean;
 }
 
-export interface NavbarProps {
-  // Props futuras para autenticação
-}
+export type NavbarProps = Record<string, never>;
+// Props futuras para autenticação
 
 // =============================================================================
 // Tipos de Estado Global
