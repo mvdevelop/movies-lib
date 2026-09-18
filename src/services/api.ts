@@ -1,10 +1,18 @@
+/// <reference types="vite/client" />
+
 import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import type {
   Movie,
-  MoviesResponse,
-  GenresResponse,
-  MovieCardProps,
+  MovieListResponse,
+  Genre,
 } from '../types';
+
+interface ImportMetaEnv {
+  readonly VITE_API_KEY?: string;
+  readonly VITE_API_URL?: string;
+  readonly VITE_IMG_URL?: string;
+  readonly VITE_API_BASE_URL?: string;
+}
 
 // =============================================================================
 // Configuração da API
@@ -43,7 +51,14 @@ const api = axios.create({
   },
 });
 
-// Request interceptor — adiciona timestamp e rate limiting básico
+// Extendemos InternalAxiosRequestConfig para adicionar metadata
+declare module 'axios' {
+  export interface InternalAxiosRequestConfig {
+    metadata?: { startTime: Date };
+  }
+}
+
+// Request interceptor — adiciona timestamp para métricas de performance
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     // Rate limiting client-side: marca o timestamp
@@ -151,42 +166,41 @@ const rateLimitedRequest = async <T,>(url: string, params: Record<string, unknow
 export const tmdbApi = {
   /** Filmes populares — cacheado por 5 minutos no cliente */
   getPopularMovies: (page = 1) =>
-    rateLimitedRequest<Movie>('/movie/popular', { page }),
+    rateLimitedRequest<MovieListResponse>('/movie/popular', { page }),
 
   /** Filmes em cartaz */
   getNowPlaying: (page = 1) =>
-    rateLimitedRequest<Movie>('/movie/now_playing', { page }),
+    rateLimitedRequest<MovieListResponse>('/movie/now_playing', { page }),
 
   /** Próximos lançamentos */
   getUpcoming: (page = 1) =>
-    rateLimitedRequest<Movie>('/movie/upcoming', { page }),
+    rateLimitedRequest<MovieListResponse>('/movie/upcoming', { page }),
 
   /** Melhores avaliados */
   getTopRated: (page = 1) =>
-    rateLimitedRequest<Movie>('/movie/top_rated', { page }),
+    rateLimitedRequest<MovieListResponse>('/movie/top_rated', { page }),
 
   /** Detalhes do filme — inclui credits, videos, similar */
   getMovieDetails: (id: string | number) =>
-    rateLimitedRequest<Movie & { credits?: unknown; videos?: unknown; similar?: unknown }>(
-      `/movie/${id}`,
-      { append_to_response: 'credits,videos,similar' }
-    ),
+    rateLimitedRequest<Movie>('/movie/' + String(id), {
+      append_to_response: 'credits,videos,similar',
+    }),
 
   /** Buscar filmes */
   searchMovies: (query: string, page = 1) =>
-    rateLimitedRequest<Movie>('/search/movie', { query, page }),
+    rateLimitedRequest<MovieListResponse>('/search/movie', { query, page }),
 
   /** Lista de gêneros */
   getGenres: () =>
-    rateLimitedRequest<{ id: number; name: string }>('/genre/movie/list'),
+    rateLimitedRequest<{ genres: Genre[] }>('/genre/movie/list'),
 
   /** Filmes por gênero */
   getMoviesByGenre: (genreId: number, page = 1) =>
-    rateLimitedRequest<Movie>('/discover/movie', { with_genres: genreId, page }),
+    rateLimitedRequest<MovieListResponse>('/discover/movie', { with_genres: genreId, page }),
 
   /** Descobrir filmes com filtros avançados */
   discoverMovies: (params: Record<string, unknown> = {}) =>
-    rateLimitedRequest<Movie>('/discover/movie', params),
+    rateLimitedRequest<MovieListResponse>('/discover/movie', params),
 };
 
 // =============================================================================

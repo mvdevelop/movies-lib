@@ -4,6 +4,10 @@
  * @see https://developer.themoviedb.org/docs
  */
 
+// =============================================================================
+// Tipos TMDB
+// =============================================================================
+
 export interface Movie {
   id: number;
   title: string;
@@ -22,10 +26,11 @@ export interface Movie {
   original_language?: string;
   genres?: Genre[];
   genre_ids?: number[];
+  genre_names?: string[]; // Opcional — usado em alguns endpoints
   production_companies?: ProductionCompany[];
   credits?: Credits;
   videos?: Videos;
-  similar?: { results: Movie[] };
+  similar?: MovieListResponse;
 }
 
 export interface Genre {
@@ -70,14 +75,7 @@ export interface ProductionCompany {
   logo_path: string | null;
 }
 
-export interface ApiResponse<T> {
-  data: T;
-  status: number;
-  statusText: string;
-  headers: Record<string, string>;
-}
-
-export interface MoviesResponse {
+export interface MovieListResponse {
   page: number;
   results: Movie[];
   total_results: number;
@@ -88,16 +86,23 @@ export interface GenresResponse {
   genres: Genre[];
 }
 
-// Props dos componentes
+// =============================================================================
+// Tipos de ComponentProps
+// =============================================================================
+
 export interface MovieCardProps {
   movie: Movie;
+  showLink?: boolean;
 }
 
 export interface NavbarProps {
   // Props futuras para autenticação
 }
 
-// Estado global da aplicação
+// =============================================================================
+// Tipos de Estado Global
+// =============================================================================
+
 export interface AppState {
   theme: 'light' | 'dark';
   favorites: number[];
@@ -109,4 +114,14 @@ export interface User {
   name: string;
   email: string;
   avatar?: string;
+}
+
+// =============================================================================
+// Tipos de API
+// =============================================================================
+
+export interface ApiErrorResponse {
+  success: boolean;
+  status_code: number;
+  status_message: string;
 }

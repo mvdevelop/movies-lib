@@ -72,7 +72,7 @@ const MoviePage: React.FC = () => {
     }).format(amount);
   };
 
-  const formatRuntime = (minutes?: number): string => {
+  const formatRuntime = (minutes?: number | null): string => {
     if (!minutes || minutes <= 0) return 'N/A';
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
@@ -423,7 +423,7 @@ const MoviePage: React.FC = () => {
               </div>
 
               {/* Production Companies */}
-              {movie.production_companies?.length > 0 && (
+              {movie.production_companies && movie.production_companies.length > 0 && (
                 <div className="mt-8">
                   <h4 className="text-xl font-bold text-white mb-4">
                     Empresas Produtoras

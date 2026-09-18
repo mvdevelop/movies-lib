@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import MovieCard from '../components/MovieCard';
 import { tmdbApi } from '../services/api';
 import type { Movie, Genre } from '../types';

@@ -2,20 +2,18 @@
   "compilerOptions": {
     "target": "ES2022",
     "useDefineForClassFields": true,
-    "lib": ["DOM", "DOMIterables", "ES2022", "ESNext"],
+    "lib": ["dom", "dom.iterable", "ES2024", "ESNext"],
     "allowJs": false,
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
-    "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "Bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "baseUrl": "./",
     "paths": {
       "@/*": ["./src/*"],
       "@/components/*": ["./src/components/*"],
@@ -27,6 +25,5 @@
       "@/layouts/*": ["./src/layouts/*"]
     }
   },
-  "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": ["src", "vite.config.ts", "vitest.config.ts", "tailwind.config.js"]
 }
