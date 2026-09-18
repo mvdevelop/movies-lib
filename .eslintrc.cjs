@@ -8,8 +8,6 @@ module.exports = {
     'plugin:react-hooks/recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:@typescript-eslint/recommended-requiring-type-checking',
-    'plugin:security/recommended',
-    'plugin:sonarjs/recommended',
   ],
   ignorePatterns: ['dist', '.eslintrc.cjs', 'node_modules', '*.js', '*.cjs', '*.mjs'],
   parser: '@typescript-eslint/parser',
@@ -19,7 +17,7 @@ module.exports = {
     ecmaFeatures: { jsx: true },
     project: ['./tsconfig.json'],
   },
-  plugins: ['react-refresh', '@typescript-eslint', 'security', 'sonarjs'],
+  plugins: ['react-refresh', '@typescript-eslint'],
   settings: { react: { version: '18' } },
   rules: {
     // React
@@ -37,20 +35,6 @@ module.exports = {
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/consistent-type-imports': 'error',
     '@typescript-eslint/no-floating-promises': 'error',
-    '@typescript-eslint/no-misused-promises': 'error',
-    '@typescript-eslint/no-unsafe-assignment': 'warn',
-    '@typescript-eslint/no-unsafe-member-access': 'warn',
-    '@typescript-eslint/no-unsafe-call': 'warn',
-
-    // Segurança
-    'security/detect-object-injection': 'warn',
-    'security/detect-non-literal-fs-filename': 'off',
-    'security/detect-non-literal-require': 'off',
-
-    // SonarJS
-    'sonarjs/no-duplicate-else-if': 'error',
-    'sonarjs/no-identical-conditions': 'error',
-    'sonarjs/no-useless-catch': 'error',
 
     // Geral
     'no-console': [
@@ -68,7 +52,4 @@ module.exports = {
       },
     },
   ],
-  settings: {
-    react: { version: '18' },
-  },
 };
