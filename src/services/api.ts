@@ -20,9 +20,17 @@ import type {
 // Configuração da API
 // =============================================================================
 
-/** @type {string | undefined} */
+/**
+ * API Configuration
+ * When VITE_API_PROXY_URL is set, the app will use the backend proxy
+ * instead of calling TMDB directly. This keeps the API key server-side.
+ * @example Set VITE_API_PROXY_URL=https://your-proxy.vercel.app/api/tmdb
+ */
 const API_KEY = import.meta.env.VITE_API_KEY as string | undefined;
-const BASE_URL = (import.meta.env.VITE_API_URL as string | undefined) || 'https://api.themoviedb.org/3';
+const BASE_URL =
+  (import.meta.env.VITE_API_PROXY_URL as string | undefined) ||
+  (import.meta.env.VITE_API_URL as string | undefined) ||
+  'https://api.themoviedb.org/3';
 // IMG_BASE_URL não é usado diretamente — as URLs de imagem são construídas pelo helper getImageUrl
 // const IMG_BASE_URL = import.meta.env.VITE_IMG_URL || 'https://image.tmdb.org/t';
 
@@ -31,11 +39,17 @@ const BASE_URL = (import.meta.env.VITE_API_URL as string | undefined) || 'https:
 // =============================================================================
 
 if (!API_KEY) {
-  console.error(
-    '❌ [Security] VITE_API_KEY não está configurada. ' +
-    'Copie .env.example para .env.local e adicione sua chave TMDB. ' +
-    'Obtenha em: https://www.themoviedb.org/settings/api'
-  );
+  const isProxyMode = !!import.meta.env.VITE_API_PROXY_URL;
+  if (isProxyMode) {
+    // In proxy mode, the key is handled by the server — no client alert needed
+    console.debug('[Security] Using API proxy — key validation is server-side');
+  } else {
+    console.error(
+      '❌ [Security] VITE_API_KEY não está configurada. ' +
+      'Copie .env.example para .env.local e adicione sua chave TMDB. ' +
+      'Obtenha em: https://www.themoviedb.org/settings/api'
+    );
+  }
 }
 
 // =============================================================================

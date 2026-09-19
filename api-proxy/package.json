@@ -1,0 +1,14 @@
+{
+  "name": "movies-lib-api-proxy",
+  "version": "1.0.0",
+  "description": "Server-side proxy for TMDB API — prevents key exposure",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "vercel build",
+    "start": "vercel dev"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "private": true
+}
