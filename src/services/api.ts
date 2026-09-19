@@ -234,8 +234,9 @@ export const getImageUrl = (path: string | null | undefined, size: ImageSize = '
     return 'https://via.placeholder.com/500x750/1a1a2e/ffffff?text=No+Image';
   }
 
-  // Sanitiza: remove caracteres perigosos
-  const sanitizedPath = encodeURIComponent(path.replace(/[^a-zA-Z0-9/_.-]/g, ''));
+  // Sanitiza: remove caracteres perigosos, mantendo /, _, ., -
+  // Não usamos encodeURIComponent pois ele codifica a /, quebrando a URL
+  const sanitizedPath = path.replace(/[^a-zA-Z0-9/_.-]/g, '');
 
   return `https://image.tmdb.org/t/p/${size}${sanitizedPath}`;
 };

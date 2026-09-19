@@ -1,0 +1,35 @@
+version: 2
+updates:
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+    open-pull-requests-limit: 10
+    groups:
+      dev-dependencies:
+        dependency-type: 'dev-dependencies'
+        update-types:
+          - 'minor'
+          - 'major'
+      prod-dependencies:
+        dependency-type: 'production'
+        update-types:
+          - 'minor'
+          - 'major'
+    reviewers:
+      - 'mvdevelop'
+    labels:
+      - 'dependencies'
+      - 'security'
+
+  # GitHub Actions dependencies
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+    open-pull-requests-limit: 5
+    reviewers:
+      - 'mvdevelop'
+    labels:
+      - 'ci'
+      - 'security'

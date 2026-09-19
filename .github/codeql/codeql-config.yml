@@ -1,0 +1,33 @@
+# CodeQL Configuration for Movies Library
+# @see https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities/controlling-code-scanning-with-a-codeql-workflow
+
+name: "CodeQL Config"
+
+# Only analyze the main source code
+paths:
+  - src/
+  - scripts/
+  - .githooks/
+
+# Ignore build artifacts and config files
+paths-ignore:
+  - node_modules/
+  - dist/
+  - .git/
+  - coverage/
+  - '*.md'
+  - 'LICENSE'
+
+# Use the latest CodeQL queries
+queries:
+  # Security-focused queries
+  - uses: security-and-quality
+  - uses: security-extended
+
+# Build steps configuration
+builds:
+  - name: "Build for CodeQL"
+    location: "."
+    commands:
+      - "npm ci"
+      - "npm run build"
