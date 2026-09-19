@@ -73,8 +73,8 @@ describe('MovieCard', () => {
       </MemoryRouter>
     );
 
-    const img = screen.getByAltText('No Image Movie') as HTMLImageElement;
-    expect(img.src).toContain('via.placeholder.com');
+    const img = screen.getByAltText('No Image Movie');
+    expect(img).toHaveAttribute('src', expect.stringContaining('via.placeholder.com'));
   });
 
   it('renders duration when runtime is available', () => {

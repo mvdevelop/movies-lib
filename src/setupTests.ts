@@ -13,10 +13,10 @@ vi.stubGlobal('IntersectionObserver', mockIntersectionObserver);
 // Mock do matchMedia (necessário para testes de componentes responsivos)
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: vi.fn().mockImplementation((query) => ({
+  value: vi.fn().mockImplementation((query: string) => ({
     matches: false,
     media: query,
-    onchange: null,
+    onchange: null as (() => void) | null,
     addListener: vi.fn(),
     removeListener: vi.fn(),
     addEventListener: vi.fn(),
@@ -26,7 +26,10 @@ Object.defineProperty(window, 'matchMedia', {
 });
 
 // Mock do scrollTo (necessário para testes de paginação)
-window.HTMLElement.prototype.scrollTo = vi.fn() as never;
+Object.defineProperty(window.HTMLElement.prototype, 'scrollTo', {
+  writable: true,
+  value: vi.fn(),
+});
 
 // Configuração de timezone para testes consistentes
 process.env.TZ = 'UTC';

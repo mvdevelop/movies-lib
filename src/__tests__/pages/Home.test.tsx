@@ -2,17 +2,20 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import Home from '@/pages/Home';
-import { tmdbApi } from '@/services/api';
 import type { Movie, Genre } from '@/types';
-import type { AxiosResponse } from 'axios';
 
 // Mock the API module
+const mockGetPopularMovies = vi.fn();
+const mockGetNowPlaying = vi.fn();
+const mockGetTopRated = vi.fn();
+const mockGetGenres = vi.fn();
+
 vi.mock('@/services/api', () => ({
   tmdbApi: {
-    getPopularMovies: vi.fn(),
-    getNowPlaying: vi.fn(),
-    getTopRated: vi.fn(),
-    getGenres: vi.fn(),
+    getPopularMovies: mockGetPopularMovies,
+    getNowPlaying: mockGetNowPlaying,
+    getTopRated: mockGetTopRated,
+    getGenres: mockGetGenres,
   },
   getImageUrl: vi.fn((path: string | null) =>
     path
@@ -38,18 +41,6 @@ describe('Home Page', () => {
       runtime: 120,
       genre_ids: [28, 12],
     },
-    {
-      id: 2,
-      title: 'Test Movie 2',
-      poster_path: '/poster2.jpg',
-      backdrop_path: '/backdrop2.jpg',
-      overview: 'Overview 2',
-      release_date: '2023-06-15',
-      vote_average: 7.2,
-      vote_count: 80,
-      runtime: 95,
-      genre_ids: [35, 18],
-    },
   ];
 
   const mockGenres: Genre[] = [
@@ -58,21 +49,21 @@ describe('Home Page', () => {
     { id: 18, name: 'Drama' },
   ];
 
-  const mockMovieResponse = (results: Movie[]): AxiosResponse => ({
-    data: { results },
+  const mockMovieResponse = {
+    data: { results: mockMovies, page: 1, total_results: 1, total_pages: 1 },
     status: 200,
     statusText: 'OK',
     headers: {},
-    config: {} as never,
-  });
+    config: {},
+  };
 
-  const mockGenreResponse = (): AxiosResponse => ({
+  const mockGenreResponse = {
     data: { genres: mockGenres },
     status: 200,
     statusText: 'OK',
     headers: {},
-    config: {} as never,
-  });
+    config: {},
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -85,10 +76,10 @@ describe('Home Page', () => {
 
   it('renders loading state initially', async () => {
     // Don't resolve promises immediately - keep them pending
-    vi.mocked(tmdbApi.getPopularMovies).mockImplementation(() => new Promise(() => {}));
-    vi.mocked(tmdbApi.getNowPlaying).mockImplementation(() => new Promise(() => {}));
-    vi.mocked(tmdbApi.getTopRated).mockImplementation(() => new Promise(() => {}));
-    vi.mocked(tmdbApi.getGenres).mockImplementation(() => new Promise(() => {}));
+    mockGetPopularMovies.mockImplementation(() => new Promise(() => {}));
+    mockGetNowPlaying.mockImplementation(() => new Promise(() => {}));
+    mockGetTopRated.mockImplementation(() => new Promise(() => {}));
+    mockGetGenres.mockImplementation(() => new Promise(() => {}));
 
     render(
       <MemoryRouter>
@@ -96,7 +87,7 @@ describe('Home Page', () => {
       </MemoryRouter>
     );
 
-    // Loader should be visible
+    // Loader should be visible (animate-spin class)
     await waitFor(() => {
       const loader = document.querySelector('.animate-spin');
       expect(loader).toBeInTheDocument();
@@ -104,10 +95,10 @@ describe('Home Page', () => {
   });
 
   it('renders featured movie after loading', async () => {
-    vi.mocked(tmdbApi.getPopularMovies).mockResolvedValue(mockMovieResponse(mockMovies));
-    vi.mocked(tmdbApi.getNowPlaying).mockResolvedValue(mockMovieResponse(mockMovies));
-    vi.mocked(tmdbApi.getTopRated).mockResolvedValue(mockMovieResponse(mockMovies));
-    vi.mocked(tmdbApi.getGenres).mockResolvedValue(mockGenreResponse());
+    mockGetPopularMovies.mockResolvedValue(mockMovieResponse);
+    mockGetNowPlaying.mockResolvedValue(mockMovieResponse);
+    mockGetTopRated.mockResolvedValue(mockMovieResponse);
+    mockGetGenres.mockResolvedValue(mockGenreResponse);
 
     render(
       <MemoryRouter>
@@ -121,10 +112,10 @@ describe('Home Page', () => {
   });
 
   it('renders category tabs', async () => {
-    vi.mocked(tmdbApi.getPopularMovies).mockResolvedValue(mockMovieResponse(mockMovies));
-    vi.mocked(tmdbApi.getNowPlaying).mockResolvedValue(mockMovieResponse(mockMovies));
-    vi.mocked(tmdbApi.getTopRated).mockResolvedValue(mockMovieResponse(mockMovies));
-    vi.mocked(tmdbApi.getGenres).mockResolvedValue(mockGenreResponse());
+    mockGetPopularMovies.mockResolvedValue(mockMovieResponse);
+    mockGetNowPlaying.mockResolvedValue(mockMovieResponse);
+    mockGetTopRated.mockResolvedValue(mockMovieResponse);
+    mockGetGenres.mockResolvedValue(mockGenreResponse);
 
     render(
       <MemoryRouter>
@@ -140,10 +131,10 @@ describe('Home Page', () => {
   });
 
   it('renders genres section', async () => {
-    vi.mocked(tmdbApi.getPopularMovies).mockResolvedValue(mockMovieResponse(mockMovies));
-    vi.mocked(tmdbApi.getNowPlaying).mockResolvedValue(mockMovieResponse(mockMovies));
-    vi.mocked(tmdbApi.getTopRated).mockResolvedValue(mockMovieResponse(mockMovies));
-    vi.mocked(tmdbApi.getGenres).mockResolvedValue(mockGenreResponse());
+    mockGetPopularMovies.mockResolvedValue(mockMovieResponse);
+    mockGetNowPlaying.mockResolvedValue(mockMovieResponse);
+    mockGetTopRated.mockResolvedValue(mockMovieResponse);
+    mockGetGenres.mockResolvedValue(mockGenreResponse);
 
     render(
       <MemoryRouter>
@@ -159,10 +150,10 @@ describe('Home Page', () => {
   });
 
   it('renders error state when API fails', async () => {
-    vi.mocked(tmdbApi.getPopularMovies).mockRejectedValue(new Error('API Error'));
-    vi.mocked(tmdbApi.getNowPlaying).mockRejectedValue(new Error('API Error'));
-    vi.mocked(tmdbApi.getTopRated).mockRejectedValue(new Error('API Error'));
-    vi.mocked(tmdbApi.getGenres).mockRejectedValue(new Error('API Error'));
+    mockGetPopularMovies.mockRejectedValue(new Error('API Error'));
+    mockGetNowPlaying.mockRejectedValue(new Error('API Error'));
+    mockGetTopRated.mockRejectedValue(new Error('API Error'));
+    mockGetGenres.mockRejectedValue(new Error('API Error'));
 
     render(
       <MemoryRouter>
@@ -176,10 +167,10 @@ describe('Home Page', () => {
   });
 
   it('shows error message with instructions when API fails', async () => {
-    vi.mocked(tmdbApi.getPopularMovies).mockRejectedValue(new Error('API Error'));
-    vi.mocked(tmdbApi.getNowPlaying).mockRejectedValue(new Error('API Error'));
-    vi.mocked(tmdbApi.getTopRated).mockRejectedValue(new Error('API Error'));
-    vi.mocked(tmdbApi.getGenres).mockRejectedValue(new Error('API Error'));
+    mockGetPopularMovies.mockRejectedValue(new Error('API Error'));
+    mockGetNowPlaying.mockRejectedValue(new Error('API Error'));
+    mockGetTopRated.mockRejectedValue(new Error('API Error'));
+    mockGetGenres.mockRejectedValue(new Error('API Error'));
 
     render(
       <MemoryRouter>
@@ -188,7 +179,6 @@ describe('Home Page', () => {
     );
 
     await waitFor(() => {
-      // Home shows error view when API fails
       expect(screen.getByText('Erro ao carregar dados')).toBeInTheDocument();
       expect(screen.getByText(/chave da API no arquivo/)).toBeInTheDocument();
     });

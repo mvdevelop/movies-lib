@@ -4,19 +4,20 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import Navbar from '@/components/Navbar';
 
 // Mock useNavigate
-vi.mock('react-router-dom', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('react-router-dom')>();
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
+  const actual = require('react-router-dom');
   return {
     ...actual,
-    useNavigate: vi.fn(),
+    useNavigate: () => mockNavigate,
   };
 });
 
 describe('Navbar', () => {
-  const mockNavigate = vi.fn();
-
   beforeEach(() => {
     vi.clearAllMocks();
+    // Ensure useNavigate returns the mock
     vi.mocked(useNavigate).mockReturnValue(mockNavigate);
   });
 
@@ -61,7 +62,7 @@ describe('Navbar', () => {
       </MemoryRouter>
     );
 
-    const searchInput = screen.getByPlaceholderText('Buscar filmes, séries...') as HTMLInputElement;
+    const searchInput = screen.getByPlaceholderText('Buscar filmes, séries...');
     const searchButton = screen.getByRole('button', { name: 'Buscar' });
 
     fireEvent.change(searchInput, { target: { value: 'Inception' } });
@@ -114,14 +115,13 @@ describe('Navbar', () => {
       </MemoryRouter>
     );
 
-    const searchInput = screen.getByPlaceholderText(
-      'Buscar filmes, séries...'
-    ) as HTMLInputElement;
+    const searchInput = screen.getByPlaceholderText('Buscar...');
     const searchButton = screen.getByRole('button', { name: 'Buscar' });
 
     fireEvent.change(searchInput, { target: { value: 'Test Movie' } });
     fireEvent.click(searchButton);
 
-    expect(searchInput.value).toBe('');
+    // Using queryByDisplayValue to verify the input was cleared
+    expect(screen.queryByDisplayValue('Test Movie')).not.toBeInTheDocument();
   });
 });
