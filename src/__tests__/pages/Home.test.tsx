@@ -4,11 +4,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import Home from '@/pages/Home';
 import type { Movie, Genre } from '@/types';
 
-// Mock the API module
-const mockGetPopularMovies = vi.fn();
-const mockGetNowPlaying = vi.fn();
-const mockGetTopRated = vi.fn();
-const mockGetGenres = vi.fn();
+// Mock the API module — using vi.hoisted to create mocks that survive hoisting
+const { mockGetPopularMovies, mockGetNowPlaying, mockGetTopRated, mockGetGenres } = vi.hoisted(() => ({
+  mockGetPopularMovies: vi.fn(),
+  mockGetNowPlaying: vi.fn(),
+  mockGetTopRated: vi.fn(),
+  mockGetGenres: vi.fn(),
+}));
 
 vi.mock('@/services/api', () => ({
   tmdbApi: {
